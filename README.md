@@ -29,3 +29,6 @@ Python scripts for investigating open source hardware GitHub repositories
 # More info
 These scripts are developped as part of a French-German interdisciplinary research project “Open! – Methods and tools for community-based product development”. It is jointly funded by the French and German national science agencies ANR (Agence Nationale de la Recherche, grant ANR-15-CE26-0012) and DFG (Deutsche Forschungsgemeinschaft, grant STA 1112/13-1). 
 See http://opensourcedesign.cc
+# Cite this work
+_Jérémy Bonvoisin_. (2018, March 27). jbon/github-mining: For Design Science Journal publication (Version v0.1). http://doi.org/10.5281/zenodo.1208379
+[![DOI](https://zenodo.org/badge/126846013.svg)](https://zenodo.org/badge/latestdoi/126846013)
