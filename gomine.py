@@ -46,7 +46,7 @@ import requests
 import datetime
 import getopt
 from logging.handlers import RotatingFileHandler
- 
+from datetime import date
 # own libraries
 from timeStop import timeStop
 
@@ -76,7 +76,7 @@ def pause(xRateLimit):
         logger.info("Rate limit reached")
         
         #go in sleep
-        for i in range(int((datetime.fromtimestamp(int(response.headers['X-RateLimit-Reset']))-datetime.now()).total_seconds())+1,0,-1):
+        for i in range(int((date.fromtimestamp(int(response.headers['X-RateLimit-Reset']))-datetime.now()).total_seconds())+1,0,-1):
             sleep(1)
             sys.stdout.write(str(i))
             k = ''.join(len(str(i))*["\b"]) 
@@ -186,9 +186,11 @@ def get_predecessors(commitUrl, logins):
     
     response = requests.get(commitUrl,auth=(logins[0],logins[1]))
     
-    if response.json()['stats']['total'] != 0 and len(response.json()['files']) == 0:
-        logger.error('filechanges could not be downloaded')
-        
+    try:
+        if response.json()['stats']['total'] != 0 and len(response.json()['files']) == 0:
+            logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
+    except KeyError as err:
+        logger.error('filechanges could not be downloaded for CommitUrl (stats are not available): '+ commitUrl)
     commitData = [json.loads(response.text)]
     
     #get remaining allowed requests
@@ -256,7 +258,11 @@ if outputDir == '':
     sys.exit(2)
     
 # initialise variables
-auth = [username, open('.token','r').read()]
+try:
+    auth = [username, open('.token','r').read()]
+except FileNotFoundError as err:
+    print ("Can't start the extraction process. Token file missing. See documentation")
+    exit(2) 
 if not os.path.exists(outputDir):
     os.makedirs(outputDir)
 t = timeStop()
