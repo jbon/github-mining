@@ -72,7 +72,7 @@ def help():
 
 def pause(xRateLimit, xReset):
     if xRateLimit < 10:
-        secondsToWait = int((datetime.datetime.now()-datetime.datetime.fromtimestamp(xReset)).total_seconds())
+        secondsToWait = int((datetime.datetime.fromtimestamp(xReset)-datetime.datetime.now()).total_seconds())
         logger.info("Rate limit of allowed requests on GitHub nearly reached. Next allowance reset " + str(datetime.datetime.fromtimestamp(xReset).strftime('%Y-%m-%d %H:%M:%S')) + " "+ str(secondsToWait) + " seconds to be waited")
         #go in sleep
         for i in range(secondsToWait+1,0,-1):
