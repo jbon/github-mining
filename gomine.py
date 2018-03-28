@@ -49,6 +49,7 @@ from logging.handlers import RotatingFileHandler
 from datetime import date
 # own libraries
 from timeStop import timeStop
+from time import sleep
 
 #############################################################################################
 # FUNCTION help
@@ -69,14 +70,12 @@ def help():
 # FUNCTION pause
 ###################################################################################################################
 
-def pause(xRateLimit):
+def pause(xRateLimit, xReset):
     if xRateLimit < 10:
-        print("you have nearly reached the rate limit of allowed requests on GitHub \n")
-        print("for resetting the rate limit you have to wait: ")
-        logger.info("Rate limit reached")
-        
+        secondsToWait = int((datetime.datetime.now()-datetime.datetime.fromtimestamp(xReset)).total_seconds())
+        logger.info("Rate limit of allowed requests on GitHub nearly reached. Next allowance reset " + str(datetime.datetime.fromtimestamp(xReset).strftime('%Y-%m-%d %H:%M:%S')) + " "+ str(secondsToWait) + " seconds to be waited")
         #go in sleep
-        for i in range(int((date.fromtimestamp(int(response.headers['X-RateLimit-Reset']))-datetime.now()).total_seconds())+1,0,-1):
+        for i in range(secondsToWait+1,0,-1):
             sleep(1)
             sys.stdout.write(str(i))
             k = ''.join(len(str(i))*["\b"]) 
@@ -102,7 +101,7 @@ def req(url, author):
     raw = r.json()
     
     #get remaining allowed requests
-    pause(int(r.headers['X-RateLimit-Remaining']))
+    pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
 
     for line in raw:
         data_set.append(line)
@@ -115,7 +114,7 @@ def req(url, author):
             raw = r.json()  
             
             #get remaining allowed requests
-            pause(int(r.headers['X-RateLimit-Remaining']))
+            pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
             
             for line in raw:
                 data_set.append(line) 
@@ -125,7 +124,7 @@ def req(url, author):
         raw = r.json()
         
         #get remaining allowed requests
-        pause(int(r.headers['X-RateLimit-Remaining']))
+        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
 
         for line in raw: 
             data_set.append(line)
@@ -141,7 +140,7 @@ def get_all_branches(owner, repo, logins):
     response = requests.get("https://api.github.com/repos/{}/{}/branches?per_page=100".format(owner,repo),auth=(logins[0],logins[1]))
     
     #get remaining allowed requests
-    pause(int(response.headers['X-RateLimit-Remaining']))
+    pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     
     # if we get a 404, there is no point of going further. raise warning and exit
     if response.status_code == 404:
@@ -194,7 +193,7 @@ def get_predecessors(commitUrl, logins):
     commitData = [json.loads(response.text)]
     
     #get remaining allowed requests
-    pause(int(response.headers['X-RateLimit-Remaining']))
+    pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
 
     try:
         sha = commitData[0]['sha']
