@@ -527,6 +527,12 @@ for JsonFile,i in zip(filesInInputDir,range(0,len(filesInInputDir))):
     fileGraphPHW = None
     fileGraphCHW = None
     
+	# processbar
+    stdout.write('\r')
+    stdout.write("[%-30s] %d%%" % ('=' * int(i*30/len(filesInInputDir)+1),  i*100/len(filesInInputDir)+1))
+    stdout.flush()
+    print(" " + fileNameRoot)
+	
     # get the list of commits from the JSON file
     try:
         with open(os.path.join(inputDir,JsonFile)) as json_file:
@@ -587,11 +593,4 @@ for JsonFile,i in zip(filesInInputDir,range(0,len(filesInInputDir))):
     if rewrite or not os.path.exists(graphmlFile):
         if fileGraphCHW == None:
             fileGraphCHW = nx.read_graphml(os.path.join(outputDir, fileNameRoot +".filechanges.CHW.graphml"))
-        nx.write_graphml(exportCommitterGraph(fileGraphCHW,selfloop, mode), graphmlFile)                
-    
-    # processbar
-    stdout.write('\r')
-    stdout.write("[%-30s] %d%%" % ('=' * int(i*30/len(filesInInputDir)+1),  i*100/len(filesInInputDir)+1))
-    stdout.flush()
-
-    
+        nx.write_graphml(exportCommitterGraph(fileGraphCHW,selfloop, mode), graphmlFile)                    

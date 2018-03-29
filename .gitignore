@@ -3,3 +3,5 @@
 .token
 *.bat
 *.log
+*.graphml
+*.svg
