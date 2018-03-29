@@ -25,4 +25,4 @@ class timeStop:
         intervalAbs = newStop - self.firstStop
         intervalRel = newStop - self.lastStop
         self.lastStop = newStop
-        return str(intervalAbs.seconds//60) +"m "+ str(intervalAbs.seconds) + "s elapsed (" + str(intervalRel.seconds) + "s since last stop)"
+        return str(intervalAbs.seconds//60) +"m "+ str(intervalAbs.seconds%60) + "s elapsed (" + str(intervalRel.seconds) + "s since last stop)"
