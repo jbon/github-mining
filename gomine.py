@@ -186,7 +186,7 @@ def get_predecessors(commitUrl, logins):
     response = requests.get(commitUrl,auth=(logins[0],logins[1]))
     
     try:
-        if response.json()['stats']['total'] != 0 and len(response.json()['files']) == 0:
+        if len(response.json()['files']) == 0:
             logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
     except KeyError as err:
         logger.error('filechanges could not be downloaded for CommitUrl (stats are not available): '+ commitUrl)
