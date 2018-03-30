@@ -210,7 +210,7 @@ if clearscreen:
     os.system('cls')
 
 # define the series of files to look at and analyze
-seriesNames = ['.committers.all.graphml', '.committers.phw.graphml', '.committers.chw.graphml']
+seriesNames = ['committers.all.graphml', 'committers.phw.graphml', 'committers.chw.graphml']
 
 repoReferences = [ \
     os.path.splitext(os.path.splitext(os.path.splitext(f)[0])[0])[0] 
@@ -255,7 +255,7 @@ for serie in seriesNames:
     ax = plt.gca()
     ax.set_ylabel('Number of committers')
     ax.get_xaxis().set_ticks([])
-    ax.set_ylim([0,30])
+    ax.set_ylim([0,40])
     ax.spines['top'].set_visible(False)
     ax.spines['left'].set_visible(False)
     ax.spines['right'].set_visible(False)

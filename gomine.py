@@ -4,7 +4,7 @@
 
 # LICENSE INFORMATION:
 #---------------------
-# gomine.py
+# goMine.py
 # extract commit data from a list of repositories and saves them in two JSON files
 # - a json file containig the reference of all branches of all forks of the repository
 # - a json file containing the references of all commits of the repository
