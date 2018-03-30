@@ -5,3 +5,5 @@
 *.log
 *.graphml
 *.svg
+*.pdf
+*.png
