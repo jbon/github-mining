@@ -101,6 +101,14 @@ def req(url, author):
     raw = r.json()
     
     #get remaining allowed requests
+    try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
+        
+    #get remaining allowed requests
     pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
 
     for line in raw:
