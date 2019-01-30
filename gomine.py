@@ -101,8 +101,12 @@ def req(url, author):
     raw = r.json()
     
     #get remaining allowed requests
+    try:
     pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
     for line in raw:
         data_set.append(line)
         
@@ -114,8 +118,12 @@ def req(url, author):
             raw = r.json()  
             
             #get remaining allowed requests
-            pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-            
+            try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
             for line in raw:
                 data_set.append(line) 
                 
@@ -123,9 +131,14 @@ def req(url, author):
         status_codes.append(r.status_code)
         raw = r.json()
         
-        #get remaining allowed requests
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-
+        
+ #get remaining allowed requests
+    try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
         for line in raw: 
             data_set.append(line)
 
@@ -198,8 +211,12 @@ def get_predecessors(commitUrl, logins):
     commitData = [json.loads(response.text)]
     
     #get remaining allowed requests
+    try: 
     pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
-
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
     try:
         sha = commitData[0]['sha']
     except Exception as e:
