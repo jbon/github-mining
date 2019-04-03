@@ -11,10 +11,11 @@
 
 # PREREQUISITES:
 # ---------------
-# - a directory with json files containing the description of commits as given by the github API.
-#   Files names are formatted as follows <GitHubUser>-<GitHubRepo>.commits.json
+# - a directory with graphml files containing the description of commits as given by the github API.
+#   Files names are formatted as follows <projectname>.committers.<series>.graphml
 # - non standard libraries (install with <libraryName>):
 #   . NetworkX (https://networkx.github.io/documentation/stable/reference/index.html)
+#   . matplotlib
 #
 # ARGUMENTS:
 # -----------
@@ -76,6 +77,8 @@ def computeIndicators(committerGraphs, repoReferences, useWeights=False):
     completenessIndex = [] # to host graph completeness values
     centralizationIndex = [] # to host the graph centrality values 
     clusteringIndex = [] # to host the graph modularity values 
+    averagePLs = [] # to host average path lenghts
+    diameters = [] # to host diameters
     
     #########################################################################################
     ## Analyse the number of edges in respect to the number of committers ###################
@@ -153,7 +156,22 @@ def computeIndicators(committerGraphs, repoReferences, useWeights=False):
         else:
             clusteringIndex.append(float('nan')) # no Modularity value can be calculated
 
-    return committersNumbers, completenessIndex, centralizationIndex, clusteringIndex
+        try:
+            averagePLs.append(nx.average_shortest_path_length(committerGraph_undirected))
+        except nx.exception.NetworkXError as err:
+            averagePLs.append('nan')
+        except nx.exception.NetworkXPointlessConcept as err:
+            averagePLs.append('nan')
+            
+        try:
+            diameters.append(nx.diameter(committerGraph_undirected))
+        except nx.exception.NetworkXError as err:
+            diameters.append('nan')
+        except ValueError as err:
+            diameters.append('nan')
+            
+        
+    return committersNumbers, completenessIndex, centralizationIndex, clusteringIndex, averagePLs, diameters
 
 
 ###################################################################################################################
@@ -221,12 +239,14 @@ for serie in seriesNames:
     #load required graphs
     loadedGraph = loadGraphMLs(inputDir, serie)
     if len(loadedGraph) == len(repoReferences):
-        nrCommitters, completeness, centralization_index, network_clustering = \
+        nrCommitters, completeness, centralization_index, network_clustering, averagePLs, diameters = \
             computeIndicators(loadedGraph, repoReferences, useWeights)
         columnsToExport.append(nrCommitters)
         columnsToExport.append(completeness)
         columnsToExport.append(centralization_index)
         columnsToExport.append(network_clustering)
+        columnsToExport.append(averagePLs)
+        columnsToExport.append(diameters)
     else:
         print ("error, all file series should have the same number of elements")
         sys.exit(2)

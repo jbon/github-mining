@@ -15,12 +15,12 @@
 # PREREQUISITES: 
 #---------------
 # - a file named ".token" and including a GitHub OAUTH Access Token
-# - a CSV file containing a list of repositories formated as follow
+# - a CSV file containing a list of repositories formated as follows
 #   . line separator: CR
 #   . column separator: ;
 #   . no heading
 #   . cell content: 
-#       . first cell of each line : project name
+#       . first cell of each row : project name
 #       . other cells: repository references <UserName>/<RepositoryName>
 # - internet connection
 
@@ -57,7 +57,7 @@ from time import sleep
 
 def help():
     print('Required Arguments:')
-    print('-u     --user                GitHub user name')
+    print('-u     --user     <username> GitHub user name')
     print('-i     --input    <path>     input CSV file')
     print('-o     --output   <path>     path of the directory where the JSON files should be stored')
     print('Optional Arguments:')
@@ -101,8 +101,12 @@ def req(url, author):
     raw = r.json()
     
     #get remaining allowed requests
+    try:
     pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
     for line in raw:
         data_set.append(line)
         
@@ -114,8 +118,12 @@ def req(url, author):
             raw = r.json()  
             
             #get remaining allowed requests
-            pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-            
+            try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
             for line in raw:
                 data_set.append(line) 
                 
@@ -123,9 +131,14 @@ def req(url, author):
         status_codes.append(r.status_code)
         raw = r.json()
         
-        #get remaining allowed requests
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-
+        
+ #get remaining allowed requests
+    try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
         for line in raw: 
             data_set.append(line)
 
@@ -140,7 +153,12 @@ def get_all_branches(owner, repo, logins):
     response = requests.get("https://api.github.com/repos/{}/{}/branches?per_page=100".format(owner,repo),auth=(logins[0],logins[1]))
     
     #get remaining allowed requests
-    pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    try:
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
     
     # if we get a 404, there is no point of going further. raise warning and exit
     if response.status_code == 404:
@@ -193,8 +211,12 @@ def get_predecessors(commitUrl, logins):
     commitData = [json.loads(response.text)]
     
     #get remaining allowed requests
+    try: 
     pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
-
+    except Exception as e: 
+        print ("Error occured: " + e)
+        print ("response header: " + response.headers)
+        sys.exit(2)
     try:
         sha = commitData[0]['sha']
     except Exception as e:

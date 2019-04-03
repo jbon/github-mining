@@ -1,5 +1,6 @@
-# About this repository
+## About this repository
 Python scripts for investigating open source hardware GitHub repositories
+
 ## Contents
 * `goMine.py` 
   * extracts metadata from GitHub API
@@ -24,12 +25,16 @@ Python scripts for investigating open source hardware GitHub repositories
   * takes as input the computed list of topological indicators produced by analysisActivityDistribution.py
 * `timeStop.py`
   * just an untility to add timestamps in traces
+
 ## Instructions 
 ... are given in the header of each script
-# More info
+
+## More info
 These scripts are developped as part of a French-German interdisciplinary research project “Open! – Methods and tools for community-based product development”. It is jointly funded by the French and German national science agencies ANR (Agence Nationale de la Recherche, grant ANR-15-CE26-0012) and DFG (Deutsche Forschungsgemeinschaft, grant STA 1112/13-1). 
 See http://opensourcedesign.cc
-# Refer to this work
-Cite as: _Jérémy Bonvoisin. (2018, March 27). jbon/github-mining: For Design Science Journal publication (Version v0.1). http://doi.org/10.5281/zenodo.1208379_
 
+## Refer to this work
+Cite as: _Jérémy Bonvoisin. (2018, March 27). jbon/github-mining: For Design Science Journal publication (Version v0.1). [doi:10.5281/zenodo.1208379](http://doi.org/10.5281/zenodo.1208379)_
 [![DOI](https://zenodo.org/badge/126846013.svg)](https://zenodo.org/badge/latestdoi/126846013)
+
+Results of these scripts have been used in: Bonvoisin, J., Buchert, T., Preidel, M., & Stark, R. (2018). How participative is open source hardware? Insights from online repository mining. Design Science, 4, E19. [doi:10.1017/dsj.2018.15](https://doi.org/10.1017/dsj.2018.15)
