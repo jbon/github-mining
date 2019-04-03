@@ -105,7 +105,7 @@ def req(url, author):
     pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
     except Exception as e: 
         print ("Error occured: " + e)
-        print ("response header: " + response.headers)
+        print ("response header: " + r.headers)
         sys.exit(2)
     for line in raw:
         data_set.append(line)
@@ -119,10 +119,10 @@ def req(url, author):
             
             #get remaining allowed requests
             try:
-        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
     except Exception as e: 
         print ("Error occured: " + e)
-        print ("response header: " + response.headers)
+        print ("response header: " + r.headers)
         sys.exit(2)
             for line in raw:
                 data_set.append(line) 
@@ -134,10 +134,10 @@ def req(url, author):
         
  #get remaining allowed requests
     try:
-        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
     except Exception as e: 
         print ("Error occured: " + e)
-        print ("response header: " + response.headers)
+        print ("response header: " + r.headers)
         sys.exit(2)
         for line in raw: 
             data_set.append(line)
