@@ -102,7 +102,7 @@ def req(url, author):
     
     #get remaining allowed requests
     try:
-    pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
     except Exception as e: 
         print ("Error occured: " + e)
         print ("response header: " + r.headers)
@@ -119,29 +119,14 @@ def req(url, author):
             
             #get remaining allowed requests
             try:
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-    except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + r.headers)
-        sys.exit(2)
+                pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+            except Exception as e: 
+                print ("Error occured: " + e)
+                print ("response header: " + r.headers)
+                sys.exit(2)
             for line in raw:
                 data_set.append(line) 
                 
-        r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
-        status_codes.append(r.status_code)
-        raw = r.json()
-        
-        
- #get remaining allowed requests
-    try:
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-    except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + r.headers)
-        sys.exit(2)
-        for line in raw: 
-            data_set.append(line)
-
     return data_set, status_codes
     
 ###################################################################################################################
@@ -206,13 +191,13 @@ def get_predecessors(commitUrl, logins):
     try:
         if len(response.json()['files']) == 0:
             logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
-    except KeyError as err:
+    except KeyError as err: #err never used??
         logger.error('filechanges could not be downloaded for CommitUrl (stats are not available): '+ commitUrl)
     commitData = [json.loads(response.text)]
     
     #get remaining allowed requests
     try: 
-    pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
         print ("Error occured: " + e)
         print ("response header: " + response.headers)
@@ -281,7 +266,7 @@ if outputDir == '':
 # initialise variables
 try:
     auth = [username, open('.token','r').read()]
-except FileNotFoundError as err:
+except FileNotFoundError as err: #err never used?
     print ("Can't start the extraction process. Token file missing. See documentation")
     exit(2) 
 if not os.path.exists(outputDir):
