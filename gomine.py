@@ -102,10 +102,10 @@ def req(url, author):
     
     #get remaining allowed requests
     try:
-    pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + r.headers)
+        print ("Error occured: " + str(e))
+        print ("response header: " + str(r.headers))
         sys.exit(2)
     for line in raw:
         data_set.append(line)
@@ -119,28 +119,28 @@ def req(url, author):
             
             #get remaining allowed requests
             try:
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-    except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + r.headers)
-        sys.exit(2)
+                pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+            except Exception as e: 
+                print ("Error occured: " + str(e))
+                print ("response header: " + str(r.headers))
+                sys.exit(2)
             for line in raw:
                 data_set.append(line) 
                 
-        r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
-        status_codes.append(r.status_code)
-        raw = r.json()
+            # r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
+            # status_codes.append(r.status_code)
+            # raw = r.json()
         
         
- #get remaining allowed requests
-    try:
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-    except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + r.headers)
-        sys.exit(2)
-        for line in raw: 
-            data_set.append(line)
+            # #get remaining allowed requests
+            # try:
+                # pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+            # except Exception as e: 
+                # print ("Error occured: " + str(e))
+                # print ("response header: " + r.headers)
+                # sys.exit(2)
+                # for line in raw: 
+                    # data_set.append(line)
 
     return data_set, status_codes
     
@@ -156,8 +156,8 @@ def get_all_branches(owner, repo, logins):
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + response.headers)
+        print ("Error occured: " + str(e))
+        print ("response header: " + str(response.headers))
         sys.exit(2)
     
     # if we get a 404, there is no point of going further. raise warning and exit
@@ -212,10 +212,10 @@ def get_predecessors(commitUrl, logins):
     
     #get remaining allowed requests
     try: 
-    pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + e)
-        print ("response header: " + response.headers)
+        print ("Error occured: " + str(e))
+        print ("response header: " + str(response.headers))
         sys.exit(2)
     try:
         sha = commitData[0]['sha']
