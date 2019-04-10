@@ -62,6 +62,7 @@ def help():
     print('-o     --output   <path>     path of the directory where the JSON files should be stored')
     print('Optional Arguments:')
     print('-r     --rewrite             rewrite mode (rewrites already extracted GraphML files)')
+    print('-d     --debug               debug mode (generates more traces)')
     print('-h     --help                calls help function')
     exit()
 
@@ -81,7 +82,7 @@ def pause(xRateLimit, xReset):
             k = ''.join(len(str(i))*["\b"]) 
             sys.stdout.write(k)
             sys.stdout.flush()
-        print("continue process")
+        logger.debug("continue process")
     
     
 ###################################################################################################################
@@ -95,34 +96,36 @@ def req(url, author):
     data_set = []
     status_codes = []
     
-    r = requests.get(url, auth=(author[0],author[1]))
+    response = requests.get(url, auth=(author[0],author[1]))
+    logger.debug("response header: " + str(response.headers))
     #save status code
-    status_codes.append(r.status_code)
-    raw = r.json()
+    status_codes.append(response.status_code)
+    raw = response.json()
     
     #get remaining allowed requests
     try:
-        pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+        pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + str(e))
-        print ("response header: " + str(r.headers))
+        logger.error("Error occured: " + str(e))
+        logger.error("response header: " + str(response.headers))
         sys.exit(2)
     for line in raw:
         data_set.append(line)
         
-    if len(data_set) != 0 and 'next' in r.links:
+    if len(data_set) != 0 and 'next' in response.links:
             
-        while r.links['next']['url'] != r.links['last']['url']:  
-            r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
-            status_codes.append(r.status_code)
-            raw = r.json()  
+        while response.links['next']['url'] != response.links['last']['url']:  
+            response = requests.get(response.links['next']['url'], auth=(author[0],author[1]))
+            logger.debug("response header: " + str(response.headers))
+            status_codes.append(response.status_code)
+            raw = response.json()  
             
             #get remaining allowed requests
             try:
-                pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+                pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
             except Exception as e: 
-                print ("Error occured: " + str(e))
-                print ("response header: " + str(r.headers))
+                logger.error("Error occured: " + str(e))
+                logger.error("response header: " + str(response.headers))
                 sys.exit(2)
             for line in raw:
                 data_set.append(line) 
@@ -151,13 +154,13 @@ def req(url, author):
 def get_all_branches(owner, repo, logins):
         
     response = requests.get("https://api.github.com/repos/{}/{}/branches?per_page=100".format(owner,repo),auth=(logins[0],logins[1]))
-    
+    logger.debug("response header: " + str(response.headers))
     #get remaining allowed requests
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + str(e))
-        print ("response header: " + str(response.headers))
+        logger.error("Error occured: " + str(e))
+        logger.error("response header: " + str(response.headers))
         sys.exit(2)
     
     # if we get a 404, there is no point of going further. raise warning and exit
@@ -181,7 +184,7 @@ def get_all_branches(owner, repo, logins):
     
     # parse all forks of the current repo
     for fork in forks:
-        print     ("    . in " + fork['owner']['login'] + "'s fork")
+        logger.info("    . in " + fork['owner']['login'] + "'s fork")
         branchesToAdd =    get_all_branches(fork['owner']['login'],fork['name'], logins)
         for itema in branchesToAdd:
             duplicate = False
@@ -202,7 +205,7 @@ def get_all_branches(owner, repo, logins):
 def get_predecessors(commitUrl, logins):
     
     response = requests.get(commitUrl,auth=(logins[0],logins[1]))
-    
+    print ("response header: " + str(response.headers))
     try:
         if len(response.json()['files']) == 0:
             logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
@@ -214,18 +217,18 @@ def get_predecessors(commitUrl, logins):
     try: 
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
-        print ("Error occured: " + str(e))
-        print ("response header: " + str(response.headers))
+        logger.error("Error occured: " + str(e))
+        logger.error("response header: " + str(response.headers))
         sys.exit(2)
     try:
         sha = commitData[0]['sha']
     except Exception as e:
-        print (commitData)
-        print (e)
+        logger.error(commitData)
+        logger.error(e)
         sys.exit(2)
         
     knownCommits.append(sha)
-    print ("     - "+sha)
+    logger.info("     - "+sha)
 
     # Gets the list of predecessors
     for predecessor in commitData[0]['parents']:
@@ -243,7 +246,7 @@ def get_predecessors(commitUrl, logins):
 
 # get command line arguments
 try:
-    options, remainder = getopt.getopt(sys.argv[1:], 'u:i:o:rh', ['user=','input=', 'output=','rewrite','help'])
+    options, remainder = getopt.getopt(sys.argv[1:], 'u:i:o:rdh', ['user=','input=', 'output=','rewrite','debug','help'])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
@@ -253,7 +256,7 @@ username = ''
 CSVFileReference = ''
 outputDir = ''
 rewriteMode = False
-debugMode = False
+loggerMode = logging.INFO
 
 for option, argument in options:
     if option in ('-u','--user'):
@@ -266,6 +269,8 @@ for option, argument in options:
         rewriteMode = True
     if option in ('-h','--help'):
         help()
+    if option in ('-d','--debug'):
+        loggerMode = logging.DEBUG
 
 # check whether all required parameters have been given as arguments and if not throw exception and abort
 if username == '':
@@ -294,11 +299,11 @@ logger = logging.getLogger("mylogger")
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
 file_handler = RotatingFileHandler(os.path.join(outputDir, '_gomine'+datetime.datetime.now().strftime('_%y.%m.%d_%H.%M.%S')+'.log'), 'a', 1000000, 1)
-file_handler.setLevel(logging.DEBUG)
+file_handler.setLevel(loggerMode)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(loggerMode)
 logger.addHandler(stream_handler)
 
 #############################################################################################
@@ -336,7 +341,7 @@ with open(CSVFileReference, newline='') as csvInput:
                         logger.error("unable to decode json file '" + branchFileName + "'. Error returned: " + str(err))
                 else:
                     # load branches from GitHub API
-                    print (" - looking for branches")
+                    logger.info(" - looking for branches")
                     branches = get_all_branches(repoOwner, repoName, auth)
                     with open(branchFileName, 'w') as json_file:
                         json.dump(branches, json_file)
@@ -352,10 +357,10 @@ with open(CSVFileReference, newline='') as csvInput:
                         logger.error("unable to decode json file '" + commitFileName + "'. Error returned: " + str(err))
                 else:
                     # load commits from GitHub API
-                    print (" - parsing branches for commits")
+                    logger.info(" - parsing branches for commits")
                     commits = []
                     for branch in branches:
-                        print ("    . " + branch['name'])
+                        logger.info("    . " + branch['name'])
                         if not branch['commit']['sha'] in knownCommits:
                             commitsToAdd = get_predecessors(branch['commit']['url'], auth)
                             for commit in commitsToAdd:
