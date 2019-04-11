@@ -97,6 +97,7 @@ def req(url, author):
     status_codes = []
     
     response = requests.get(url, auth=(author[0],author[1]))
+    logger.debug("request URL: " + url)
     logger.debug("response header: " + str(response.headers))
     #save status code
     status_codes.append(response.status_code)
@@ -107,8 +108,9 @@ def req(url, author):
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
         logger.error("Error occured: " + str(e))
+        logger.error("request URL: " + url)
         logger.error("response header: " + str(response.headers))
-        sys.exit(2)
+        raise Exception('blah!')
     for line in raw:
         data_set.append(line)
         
@@ -116,6 +118,7 @@ def req(url, author):
             
         while response.links['next']['url'] != response.links['last']['url']:  
             response = requests.get(response.links['next']['url'], auth=(author[0],author[1]))
+            logger.debug("request URL: " + url)
             logger.debug("response header: " + str(response.headers))
             status_codes.append(response.status_code)
             raw = response.json()  
@@ -125,8 +128,9 @@ def req(url, author):
                 pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
             except Exception as e: 
                 logger.error("Error occured: " + str(e))
+                logger.error("request URL: " + url)
                 logger.error("response header: " + str(response.headers))
-                sys.exit(2)
+                raise Exception('blah!')
             for line in raw:
                 data_set.append(line) 
                 
@@ -152,16 +156,20 @@ def req(url, author):
 ###################################################################################################################
 # Returns all branches of all forks of a repository in json format as delivered by GitHub
 def get_all_branches(owner, repo, logins):
-        
-    response = requests.get("https://api.github.com/repos/{}/{}/branches?per_page=100".format(owner,repo),auth=(logins[0],logins[1]))
+    
+    requestUrl = "https://api.github.com/repos/{}/{}/branches?per_page=100".format(owner,repo)
+    response = requests.get(requestUrl,auth=(logins[0],logins[1]))
+    logger.debug("request URL: " + requestUrl)
     logger.debug("response header: " + str(response.headers))
+
     #get remaining allowed requests
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
         logger.error("Error occured: " + str(e))
+        logger.error("request URL: " + requestUrl)
         logger.error("response header: " + str(response.headers))
-        sys.exit(2)
+        raise Exception('blah!')
     
     # if we get a 404, there is no point of going further. raise warning and exit
     if response.status_code == 404:
@@ -205,7 +213,8 @@ def get_all_branches(owner, repo, logins):
 def get_predecessors(commitUrl, logins):
     
     response = requests.get(commitUrl,auth=(logins[0],logins[1]))
-    print ("response header: " + str(response.headers))
+    logger.debug("request URL: " + commitUrl)
+    logger.debug("response header: " + str(response.headers))
     try:
         if len(response.json()['files']) == 0:
             logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
@@ -218,14 +227,15 @@ def get_predecessors(commitUrl, logins):
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
         logger.error("Error occured: " + str(e))
+        logger.error("request URL: " + commitUrl)
         logger.error("response header: " + str(response.headers))
-        sys.exit(2)
+        raise Exception('blah!')
     try:
         sha = commitData[0]['sha']
     except Exception as e:
         logger.error(commitData)
         logger.error(e)
-        sys.exit(2)
+        raise Exception('blah!')
         
     knownCommits.append(sha)
     logger.info("     - "+sha)
