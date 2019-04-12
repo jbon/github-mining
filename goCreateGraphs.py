@@ -5,7 +5,7 @@
 # LICENSE INFORMATION:
 # ---------------------
 # goCreateGraphs.py 
-# Authors: Jérémy Bonvoisin, Jonas Massmann, Rafaella Antoniou
+# Authors: Jérémy Bonvoisin, Jonas Massmann, Rafaella Antoniou.
 # Homepage: http://opensourcedesign.cc
 # License: GPL v.3
 
