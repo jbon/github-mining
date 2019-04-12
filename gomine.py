@@ -107,6 +107,7 @@ def req(url, author):
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
+        print ("error at line 110")
         logger.error("Error occured: " + str(e))
         logger.error("request URL: " + url)
         logger.error("response header: " + str(response.headers))
@@ -127,6 +128,7 @@ def req(url, author):
             try:
                 pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
             except Exception as e: 
+                print ("error at line 131")
                 logger.error("Error occured: " + str(e))
                 logger.error("request URL: " + url)
                 logger.error("response header: " + str(response.headers))
@@ -166,6 +168,7 @@ def get_all_branches(owner, repo, logins):
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
+        print ("error at line 171")
         logger.error("Error occured: " + str(e))
         logger.error("request URL: " + requestUrl)
         logger.error("response header: " + str(response.headers))
@@ -226,6 +229,7 @@ def get_predecessors(commitUrl, logins):
     try: 
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
     except Exception as e: 
+        print ("error at line 232")
         logger.error("Error occured: " + str(e))
         logger.error("request URL: " + commitUrl)
         logger.error("response header: " + str(response.headers))
@@ -233,6 +237,7 @@ def get_predecessors(commitUrl, logins):
     try:
         sha = commitData[0]['sha']
     except Exception as e:
+        print ("error at line 238")
         logger.error(commitData)
         logger.error(e)
         raise Exception('blah!')
