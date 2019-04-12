@@ -26,7 +26,7 @@
 
 # standard python libraries
 import os
-import pdb
+import pdb #Imported but unused? should we remove this?
 import json
 import math
 import random
@@ -36,7 +36,7 @@ import networkx as nx
 import numpy as np
 from collections import Counter
 from sys import stdout, exit, argv
-from datetime import datetime, date
+from datetime import datetime, date #Imported but unused? should we remove this?
 
 #############################################################################################
 # FUNCTION help
@@ -49,8 +49,8 @@ def help():
     print('Optional Arguments:')
     print('-r     --rewrite             rewrite mode (rewrites already extracted GraphML files)')
     print('-s     --selfloop            create committergraph with selfloops')
-    print('-m     --mode                directed or unidirected committergraph (init is unidirected) ')
-    print('-d     --debug               switchs into Debug mode')
+    print('-m     --mode                directed or unidirected committergraph (init is unidirected)')
+    print('-d     --debug               switches into Debug mode')
     print('-c     --clearscreen         clears the terminal before starting the execution of the script')
     print('-h     --help                calls help function')
     exit()
@@ -62,7 +62,7 @@ def help():
 def exportCommitGraph(commits):
 
     # dict for all possible git names
-    committer = {'author_name':[],
+    committer = {'author_name':[], #What do the empty square brackets mean here?
                 'author_email': [],
                 'author_login': [],
                 'committer_name': [],
@@ -76,10 +76,10 @@ def exportCommitGraph(commits):
     for commit in commits:
 
         # init name for all commits
-        author_name = commit['commit']['author']['name']
+        author_name = commit['commit']['author']['name'] #Does this mean that in this case commit is the author name?
        
         # check if init name appeared in one of the name forms already
-        # if not, create new dict entrie with all name forms and define new color
+        # if not, create new dict entry with all name forms and define new color
         # TODO write shorter
         if author_name not in [x for v in committer.values() for x in v] and commit['commit']['committer']['email'] not in [x for v in committer.values() for x in v] and committer['author_login'] not in [x for v in committer.values() for x in v] and committer['committer_name'] not in [x for v in committer.values() for x in v] and committer['committer_login'] not in [x for v in committer.values() for x in v] and committer['committer_email'] not in [x for v in committer.values() for x in v]:
             committer['author_name'].append(commit['commit']['author']['name'])
