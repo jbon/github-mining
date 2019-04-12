@@ -133,7 +133,7 @@ def exportCommitGraph(commits):
     
     for commit in commits:
         for parent in commit['parents']:
-            G.add_edge(parent['sha'], commit['sha'])
+            G.add_edge(parent['sha'], commit['sha'], weight = random.randint(1, 200)) # weight = random.randint(1, 2000 to be replaced
     return G
 
 ###################################################################################################################
