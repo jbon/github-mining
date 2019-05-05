@@ -1,36 +1,36 @@
 #############################################################################################
 # SCRIPT INFORMATION
 #############################################################################################
+"""
+LICENSE INFORMATION:
+---------------------
+goMine.py
+extract commit data from a list of repositories and saves them in two JSON files
+- a json file containig the reference of all branches of all forks of the repository
+- a json file containing the references of all commits of the repository
+Authors: Kerstin Carola Schmidt, Jérémy Bonvoisin, Jonas Massmann
+Homepage: http://opensourcedesign.cc
+License: GPL v.3
 
-# LICENSE INFORMATION:
-#---------------------
-# goMine.py
-# extract commit data from a list of repositories and saves them in two JSON files
-# - a json file containig the reference of all branches of all forks of the repository
-# - a json file containing the references of all commits of the repository
-# Authors: Kerstin Carola Schmidt, Jérémy Bonvoisin, Jonas Massmann
-# Homepage: http://opensourcedesign.cc
-# License: GPL v.3
+PREREQUISITES: 
+--------------
+- a file named ".token" and including a GitHub OAUTH Access Token
+- a CSV file containing a list of repositories formated as follows
+  . line separator: CR
+  . column separator: ;
+  . no heading
+  . cell content: 
+      . first cell of each row : project name
+      . other cells: repository references <UserName>/<RepositoryName>
+- internet connection
 
-# PREREQUISITES: 
-#---------------
-# - a file named ".token" and including a GitHub OAUTH Access Token
-# - a CSV file containing a list of repositories formated as follows
-#   . line separator: CR
-#   . column separator: ;
-#   . no heading
-#   . cell content: 
-#       . first cell of each row : project name
-#       . other cells: repository references <UserName>/<RepositoryName>
-# - internet connection
+ARGUMENTS:
+----------
+see help() function
 
-# ARGUMENTS:
-# ----------
-# see help() function
-
-# To-do-list:
-# - check whether the repository is a fork and trow an exception if yes
-
+To-do-list:
+- check whether the repository is a fork and trow an exception if yes
+"""
 #############################################################################################
 # HEADER
 #############################################################################################
@@ -361,10 +361,11 @@ with open(CSVFileReference, newline='') as csvInput:
                             for commit in commitsToAdd:
                                 commits.append(commit)
                     logger.info("\t"+str(len(commits))+ " commits extracted")
-
-                    # verify the extraction of commits has been correctly done
-                    # for some reason i don't know, sometimes the extraction stops unexpectedly
-                    # in these cases, there is one commit whose parent is not in the commit list
+                    """
+                    verify the extraction of commits has been correctly done
+                    for some reason i don't know, sometimes the extraction stops unexpectedly
+                    in these cases, there is one commit whose parent is not in the commit list
+                    """
                     commitShaList = []
                     for commit in commits:
                         commitShaList.append(commit['sha'])
