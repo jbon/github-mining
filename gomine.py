@@ -35,7 +35,7 @@ To-do-list:
 # HEADER
 #############################################################################################
 
-# standard python libraries
+# import standard python libraries
 import csv
 import sys
 import os
@@ -135,22 +135,23 @@ def req(url, author):
                 raise Exception('blah!')
             for line in raw:
                 data_set.append(line) 
-                
-            # r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
-            # status_codes.append(r.status_code)
-            # raw = r.json()
+            
+            """
+            r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
+            status_codes.append(r.status_code)
+            raw = r.json()
         
         
-            # #get remaining allowed requests
-            # try:
-                # pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-            # except Exception as e: 
-                # print ("Error occured: " + str(e))
-                # print ("response header: " + r.headers)
-                # sys.exit(2)
-                # for line in raw: 
-                    # data_set.append(line)
-
+            get remaining allowed requests
+            try:
+                pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+            except Exception as e: 
+                print ("Error occured: " + str(e))
+                print ("response header: " + r.headers)
+                sys.exit(2)
+                for line in raw: 
+                    data_set.append(line)
+            """
     return data_set, status_codes
     
 ###################################################################################################################
@@ -289,7 +290,7 @@ for option, argument in options:
 
 # check whether all required parameters have been given as arguments and if not throw exception and abort
 if username == '':
-    print ("Argument required: github user name. Type '-u <username>' in the command line")
+    print ("Argument required: GitHub username. Type '-u <username>' in the command line")
     sys.exit(2)
 if CSVFileReference == '':
     print ("Argument required: input CSV file. Type '-i <filepath>' in the command line")
