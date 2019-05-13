@@ -1,41 +1,41 @@
 #############################################################################################
 # SCRIPT INFORMATION
 #############################################################################################
+"""
+LICENSE INFORMATION:
+---------------------
+goMine.py
+extract commit data from a list of repositories and saves them in two JSON files
+- a json file containig the reference of all branches of all forks of the repository
+- a json file containing the references of all commits of the repository
+Authors: Kerstin Carola Schmidt, Jérémy Bonvoisin, Jonas Massmann
+Homepage: http://opensourcedesign.cc
+License: GPL v.3
 
-# LICENSE INFORMATION:
-#---------------------
-# goMine.py
-# extract commit data from a list of repositories and saves them in two JSON files
-# - a json file containig the reference of all branches of all forks of the repository
-# - a json file containing the references of all commits of the repository
-# Authors: Kerstin Carola Schmidt, Jérémy Bonvoisin, Jonas Massmann
-# Homepage: http://opensourcedesign.cc
-# License: GPL v.3
+PREREQUISITES: 
+--------------
+- a file named ".token" and including a GitHub OAUTH Access Token
+- a CSV file containing a list of repositories formated as follows
+  . line separator: CR
+  . column separator: ;
+  . no heading
+  . cell content: 
+      . first cell of each row : project name
+      . other cells: repository references <UserName>/<RepositoryName>
+- internet connection
 
-# PREREQUISITES: 
-#---------------
-# - a file named ".token" and including a GitHub OAUTH Access Token
-# - a CSV file containing a list of repositories formated as follows
-#   . line separator: CR
-#   . column separator: ;
-#   . no heading
-#   . cell content: 
-#       . first cell of each row : project name
-#       . other cells: repository references <UserName>/<RepositoryName>
-# - internet connection
+ARGUMENTS:
+----------
+see help() function
 
-# ARGUMENTS:
-# ----------
-# see help() function
-
-# To-do-list:
-# - check whether the repository is a fork and trow an exception if yes
-
+To-do-list:
+- check whether the repository is a fork and trow an exception if yes
+"""
 #############################################################################################
 # HEADER
 #############################################################################################
 
-# standard python libraries
+# import standard python libraries
 import csv
 import sys
 import os
@@ -135,22 +135,23 @@ def req(url, author):
                 raise Exception('blah!')
             for line in raw:
                 data_set.append(line) 
-                
-            # r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
-            # status_codes.append(r.status_code)
-            # raw = r.json()
+            
+            """
+            r = requests.get(r.links['next']['url'], auth=(author[0],author[1]))
+            status_codes.append(r.status_code)
+            raw = r.json()
         
         
-            # #get remaining allowed requests
-            # try:
-                # pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
-            # except Exception as e: 
-                # print ("Error occured: " + str(e))
-                # print ("response header: " + r.headers)
-                # sys.exit(2)
-                # for line in raw: 
-                    # data_set.append(line)
-
+            get remaining allowed requests
+            try:
+                pause(int(r.headers['X-RateLimit-Remaining']), int(r.headers['X-RateLimit-Reset']))
+            except Exception as e: 
+                print ("Error occured: " + str(e))
+                print ("response header: " + r.headers)
+                sys.exit(2)
+                for line in raw: 
+                    data_set.append(line)
+            """
     return data_set, status_codes
     
 ###################################################################################################################
@@ -221,7 +222,7 @@ def get_predecessors(commitUrl, logins):
     try:
         if len(response.json()['files']) == 0:
             logger.error('filechanges could not be downloaded for CommitUrl (stats are zero): '+ commitUrl)
-    except KeyError as err:
+    except KeyError as err: #err never used??
         logger.error('filechanges could not be downloaded for CommitUrl (stats are not available): '+ commitUrl)
     commitData = [json.loads(response.text)]
     
@@ -289,7 +290,7 @@ for option, argument in options:
 
 # check whether all required parameters have been given as arguments and if not throw exception and abort
 if username == '':
-    print ("Argument required: github user name. Type '-u <username>' in the command line")
+    print ("Argument required: GitHub username. Type '-u <username>' in the command line")
     sys.exit(2)
 if CSVFileReference == '':
     print ("Argument required: input CSV file. Type '-i <filepath>' in the command line")
@@ -301,7 +302,7 @@ if outputDir == '':
 # initialise variables
 try:
     auth = [username, open('.token','r').read()]
-except FileNotFoundError as err:
+except FileNotFoundError as err: #err never used?
     print ("Can't start the extraction process. Token file missing. See documentation")
     exit(2) 
 if not os.path.exists(outputDir):
@@ -381,10 +382,11 @@ with open(CSVFileReference, newline='') as csvInput:
                             for commit in commitsToAdd:
                                 commits.append(commit)
                     logger.info("\t"+str(len(commits))+ " commits extracted")
-
-                    # verify the extraction of commits has been correctly done
-                    # for some reason i don't know, sometimes the extraction stops unexpectedly
-                    # in these cases, there is one commit whose parent is not in the commit list
+                    """
+                    verify the extraction of commits has been correctly done
+                    for some reason i don't know, sometimes the extraction stops unexpectedly
+                    in these cases, there is one commit whose parent is not in the commit list
+                    """
                     commitShaList = []
                     for commit in commits:
                         commitShaList.append(commit['sha'])
