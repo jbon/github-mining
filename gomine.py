@@ -106,7 +106,7 @@ def req(url, author):
     #get remaining allowed requests
     try:
         pause(int(response.headers['X-RateLimit-Remaining']), int(response.headers['X-RateLimit-Reset']))
-   except Exception as e: 
+    except Exception as e: 
         print ("error at line 110")
         logger.error("Error occured: " + str(e))
         logger.error("request URL: " + url)
