@@ -7,3 +7,5 @@
 *.svg
 *.pdf
 *.png
+__pycache__/
+*.pyc
