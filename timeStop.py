@@ -15,6 +15,9 @@
 #############################################################################################
 
 import datetime
+import sys
+from time import sleep
+
 
 class timeStop:
     def __init__(self):
@@ -26,3 +29,10 @@ class timeStop:
         intervalRel = newStop - self.lastStop
         self.lastStop = newStop
         return str(intervalAbs.seconds//60) +"m "+ str(intervalAbs.seconds%60) + "s elapsed (" + str(intervalRel.seconds) + "s since last stop)"
+    def pause(secondsToWait):
+        for i in range(secondsToWait+1,0,-1):
+            sleep(1)
+            sys.stdout.write(str(i))
+            k = ''.join(len(str(i))*["\b"]) 
+            sys.stdout.write(k)
+            sys.stdout.flush()
