@@ -68,18 +68,21 @@ def help():
 
 # get command line arguments
 try:
-    options, remainder = getopt.getopt(sys.argv[1:], 'i:o:rdh', ['input=', 'output=','rewrite','debug','help'])
+    options, remainder = getopt.getopt(sys.argv[1:], 'u:i:o:rdh', ['user=','input=', 'output=','rewrite','debug','help'])
 except getopt.GetoptError as err:
     print(str(err))
     sys.exit(2)
 
 # initialise the parameters to be found in the arguments
+username = ''
 inputCSVFileReference = ''
 outputDir = ''
 rewriteMode = False
 loggerMode = logging.INFO
 
 for option, argument in options:
+    if option in ('-u','--user'):
+        username = argument
     if option in ('-i','--input'):
         inputCSVFileReference = argument
     if option in ('-o','--output'):
@@ -92,6 +95,9 @@ for option, argument in options:
         loggerMode = logging.DEBUG
 
 # check whether all required parameters have been given as arguments and if not throw exception and abort
+if username == '':
+    print ("Argument required: GitHub username. Type '-u <username>' in the command line")
+    sys.exit(2)
 if inputCSVFileReference == '':
     print ("Argument required: input CSV file. Type '-i <filepath>' in the command line")
     sys.exit(2)
@@ -101,7 +107,7 @@ if outputDir == '':
     
 # initialise variables
 try:
-    auth = open('.token','r').read()
+    token = open('.token','r').read()
 except FileNotFoundError as err:
     print ("Can't start the extraction process. Token file missing. See documentation")
     exit(2) 
@@ -150,13 +156,13 @@ with open(inputCSVFileReference, newline='') as csvInput:
                     logger.info("start extraction repo "+repoOwner+"/"+repoName)
 
                     # get all forks
-                    forks = getAllForks(repoOwner, repoName, auth)
+                    forks = getAllForks(repoOwner, repoName, token)
                     logger.info(("\t"+str(len(forks))+ " forks found"))
 
                     # get all branches from the repository and its forks
-                    branches = getAllBranches(repoOwner, repoName, auth)
+                    branches = getAllBranches(repoOwner, repoName, token)
                     for fork in forks:
-                        forkBranches = getAllBranches(fork["node"]["owner"]["login"], repoName, auth)
+                        forkBranches = getAllBranches(fork["node"]["owner"]["login"], repoName, token)
                         if forkBranches==[]:
                             logger.error("\tAPI request for repository "+fork["node"]["owner"]["login"]+"/"+repoName+" raised a 404 error")
                         branches += forkBranches
@@ -174,11 +180,11 @@ with open(inputCSVFileReference, newline='') as csvInput:
                     commits = []
                     for sha in knownCommitReferences:
                         logger.info("\t\textracting commit info "+sha)
-                        commitDetails = getCommitDetails(repoOwner, repoName, sha, auth)
+                        commitDetails = getCommitDetails(repoOwner, repoName, sha, username, token)
                         commits.append(commitDetails)
                     logger.info("\t"+str(len(commits))+ " commits infos extracted")
 
-                    rateLimit = checkRateLimit(auth)
+                    rateLimit = checkRateLimit(token)
                     logger.info("\tremaining ratelimit: " + str(rateLimit["remaining"]))
                     logger.info("\t"+t.stop())
                     

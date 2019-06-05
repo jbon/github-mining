@@ -201,13 +201,13 @@ def checkRateLimit(APIKey):
 # FUNCTION getCommitDetails
 ###################################################################################################################
 # Returns details of a given commit
-def getCommitDetails(repoOwner, repoName, sha, APIKey):
+def getCommitDetails(repoOwner, repoName, sha, GitHubUserName, APIKey):
    
    # uses GitHub API v3 since v4 does not allow to fetch file info, see:
    # https://github.community/t5/GitHub-API-Development-and/GraphQL-API-get-list-of-files-related-to-commit/td-p/24666
    
     query = "https://api.github.com/repos/"+repoOwner+"/"+repoName+"/commits/"+sha
-    queryResults = requests.get(query,auth=("jbon",APIKey))
+    queryResults = requests.get(query,auth=(GitHubUserName,APIKey))
     deserializedQueryResults = json.loads(queryResults.text)
     
     return deserializedQueryResults
