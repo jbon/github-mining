@@ -147,7 +147,7 @@ with open(inputCSVFileReference, newline='') as csvInput:
             # load branches from json file
             logger.warning(outputFileName + " already exists. Branches references are loaded from this file. Please be aware this data may be outdated.")
         else:
-            jsonOutput = []
+            commits = []
             for cell in row[1:]:
                 repoRefs = cell.split('/')
                 if len(repoRefs) == 2:
@@ -177,7 +177,6 @@ with open(inputCSVFileReference, newline='') as csvInput:
                     logger.info("\t"+str(len(knownCommitReferences))+ " unique commits found")
 
                     # compile all commits form all branches of the repository and all its forks
-                    commits = []
                     for sha in knownCommitReferences:
                         logger.info("\t\textracting commit info "+sha)
                         commitDetails = getCommitDetails(repoOwner, repoName, sha, username, token)
@@ -192,8 +191,6 @@ with open(inputCSVFileReference, newline='') as csvInput:
                         secondsToWait = int((datetime.datetime.fromtimestamp(xReset)-datetime.datetime.now()).total_seconds())
                         logger.info("Rate limit of allowed requests on GitHub nearly reached. Next allowance reset " + str(datetime.datetime.fromtimestamp(rateLimit["reset"]).strftime('%Y-%m-%d %H:%M:%S')) + " "+ str(secondsToWait) + " seconds to be waited")
                         t.pause(secondsToWait)
-                    
-                    jsonOutput.append({"repo": {"name": repoName, "owner": repoOwner, "forks": forks, "branches": branches}})
                     
                 else :
                     logger.error("wrong cell format, should be 'username' '/' 'repository' - line ignored: '"+ str(cell) +"'")
