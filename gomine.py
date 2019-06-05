@@ -42,9 +42,10 @@ import getopt
 from logging.handlers import RotatingFileHandler
 from datetime import date
 from time import sleep
+
 # own libraries
 from timeStop import timeStop
-from GitHubAPIUtils import getAllForks, getAllBranches, getCommitHistory, prettyPrint, checkRateLimit
+from GitHubAPIUtils import getAllForks, getAllBranches, prettyPrint, checkRateLimit, getCommitDetails
 
 #############################################################################################
 # FUNCTION help
@@ -157,32 +158,42 @@ with open(inputCSVFileReference, newline='') as csvInput:
                     for fork in forks:
                         forkBranches = getAllBranches(fork["node"]["owner"]["login"], repoName, auth)
                         if forkBranches==[]:
-                            logger.error("API request for repository "+fork["node"]["owner"]["login"]+"/"+repoName+" raised a 404 error")
+                            logger.error("\tAPI request for repository "+fork["node"]["owner"]["login"]+"/"+repoName+" raised a 404 error")
                         branches += forkBranches
                     logger.info("\t"+str(len(branches))+ " branches found")
 
-                    # compile all commits form all branches of the repository and all its forks
-                    branchesWithCommitHistories = []
+                    # create a non redundant list of commits
+                    knownCommitReferences = []
                     for branch in branches:
-                        branchesWithCommitHistories.append(getCommitHistory(branch["node"]["id"], auth))
-                    logger.info("\t"+str(len(branchesWithCommitHistories))+ " histories extracted")
+                        for commit in branch["node"]["target"]["history"]["edges"]:
+                            if not commit["node"]["oid"] in knownCommitReferences:
+                                knownCommitReferences.append(commit["node"]["oid"])
+                    logger.info("\t"+str(len(knownCommitReferences))+ " unique commits found")
+
+                    # compile all commits form all branches of the repository and all its forks
+                    commits = []
+                    for sha in knownCommitReferences:
+                        logger.info("\t\textracting commit info "+sha)
+                        commitDetails = getCommitDetails(repoOwner, repoName, sha, auth)
+                        commits.append(commitDetails)
+                    logger.info("\t"+str(len(commits))+ " commits infos extracted")
 
                     rateLimit = checkRateLimit(auth)
                     logger.info("\tremaining ratelimit: " + str(rateLimit["remaining"]))
                     logger.info("\t"+t.stop())
                     
-                    if rateLimit < 10:
+                    if rateLimit["remaining"] < 10:
                         secondsToWait = int((datetime.datetime.fromtimestamp(xReset)-datetime.datetime.now()).total_seconds())
                         logger.info("Rate limit of allowed requests on GitHub nearly reached. Next allowance reset " + str(datetime.datetime.fromtimestamp(rateLimit["reset"]).strftime('%Y-%m-%d %H:%M:%S')) + " "+ str(secondsToWait) + " seconds to be waited")
                         t.pause(secondsToWait)
                     
-                    jsonOutput.append({"repo": {"name": repoName, "owner": repoOwner, "forks": forks, "branches": branchesWithCommitHistories}})
+                    jsonOutput.append({"repo": {"name": repoName, "owner": repoOwner, "forks": forks, "branches": branches}})
                     
                 else :
                     logger.error("wrong cell format, should be 'username' '/' 'repository' - line ignored: '"+ str(cell) +"'")
             
             # write the json file corresponding to the current project
             with open(outputFileName, 'w') as json_file:
-                json.dump(jsonOutput, json_file)
+                json.dump(commits, json_file)
             logger.info("json output file created")
 

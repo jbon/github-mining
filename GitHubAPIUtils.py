@@ -51,17 +51,21 @@ def run_APIv4_query(query, APIKey): # A simple function to use requests.post to 
 # FUNCTION prettyPrint
 ###################################################################################################################    
 def prettyPrint (uglyJson):
-    parsed = json.loads(str(uglyJson).replace("'", '"'))
+    print(type(uglyJson))
+    if type(uglyJson) is list:
+        parsed = json.loads(str(uglyJson).replace("'", '"'))
+    elif type(uglyJson) is dict:
+        parsed = uglyJson
     print(json.dumps(parsed, indent=2, sort_keys=True))
-
     
 ###################################################################################################################
 # FUNCTION getAllBranches
 ###################################################################################################################
-# Returns the references to all branches of a repository
+# Returns the references to all branches and commi histories of a repository
 def getAllBranches(repoOwner, repoName, APIKey):
     
     # GraphQL query with a pagination variable
+    # investigate TREE and Deployment
     query = '{ \
         repository(name: "' + repoName + '", owner: "' + repoOwner + '") { \
             refs(refPrefix:"refs/heads/", $pagination$) { \
@@ -69,6 +73,20 @@ def getAllBranches(repoOwner, repoName, APIKey):
                     node { \
                         id \
                         name \
+                        target { \
+                            ... on Commit { \
+                                history { \
+                                    edges { \
+                                        node { \
+                                            ... on Commit { \
+                                                oid \
+                                                abbreviatedOid \
+                                            } \
+                                        } \
+                                    } \
+                                } \
+                            } \
+                        } \
                     } \
                     cursor \
                 } \
@@ -88,7 +106,7 @@ def getAllBranches(repoOwner, repoName, APIKey):
         , APIKey)
   
 
-      # sometimes repository queries return a 404/"not found" error, in those cases we return an error
+      # sometimes repository queries return a 404/"not found" error, in those cases we return an empty list
     if queryResults["data"]["repository"]==None :
         return []
     else :
@@ -162,50 +180,6 @@ def getAllForks(repoOwner, repoName, APIKey):
         return forks + subforks  
 
 ###################################################################################################################
-# FUNCTION getCommitHistory
-###################################################################################################################
-# Returns the owner name of all recursive forks of a repository
-def getCommitHistory(branchHeadGlobalNodeID, APIKey):
-   
-   # GraphQL query with a Global Node ID variable
-    query = '{ \
-        node(id: "' + branchHeadGlobalNodeID + '") { \
-            ... on Ref { \
-                id \
-                name \
-                target { \
-                    ... on Commit { \
-                        oid \
-                        history { \
-                            edges { \
-                                node { \
-                                    ... on Commit { \
-                                        oid \
-                                        parents(last: 2) { \
-                                            edges { \
-                                                node { \
-                                                    ... on Commit { \
-                                                        oid \
-                                                    } \
-                                                } \
-                                            } \
-                                        } \
-                                    } \
-                                } \
-                            } \
-                        } \
-                    } \
-                } \
-            } \
-        } \
-    }'
-
-    queryResults = run_APIv4_query(query, APIKey)
-    
-    return queryResults["data"]["node"]
-
- 
-###################################################################################################################
 # FUNCTION checkRateLimit
 ###################################################################################################################
 #
@@ -222,3 +196,18 @@ def checkRateLimit(APIKey):
 
     return run_APIv4_query(query, APIKey)["data"]["rateLimit"]
     
+    
+###################################################################################################################
+# FUNCTION getCommitDetails
+###################################################################################################################
+# Returns details of a given commit
+def getCommitDetails(repoOwner, repoName, sha, APIKey):
+   
+   # uses GitHub API v3 since v4 does not allow to fetch file info, see:
+   # https://github.community/t5/GitHub-API-Development-and/GraphQL-API-get-list-of-files-related-to-commit/td-p/24666
+   
+    query = "https://api.github.com/repos/"+repoOwner+"/"+repoName+"/commits/"+sha
+    queryResults = requests.get(query,auth=("jbon",APIKey))
+    deserializedQueryResults = json.loads(queryResults.text)
+    
+    return deserializedQueryResults
