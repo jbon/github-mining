@@ -21,17 +21,10 @@ TOBE UPDATED
 
 # standard python libraries
 import os
-import pdb #Imported but unused? should we remove this?
 import json
-import math
-import random
-import hashlib
 from getopt import getopt, GetoptError
 import networkx as nx
-import numpy as np
-from collections import Counter
-from sys import stdout, exit, argv
-from datetime import datetime, date #Imported but unused? should we remove this?
+from sys import exit, argv
 
 #############################################################################################
 # FUNCTION help
@@ -39,8 +32,8 @@ from datetime import datetime, date #Imported but unused? should we remove this?
 
 def help():
     print('Required Arguments:')
-    print('-i     --input     <path>    path of an input JSON or directory where JSON files are stored')
-    print('-o     --output     <path>   path of an input JSON or directory where JSON files are stored')
+    print('-i     --input     <path>    path of a directory where JSON files are stored')
+    print('-o     --output     <path>   path of a directory where graphs will be saved')
     print('Optional Arguments:')
     print('-r     --rewrite             rewrite mode (rewrites already created graphs)')
     print('-h     --help                calls help function')
@@ -121,42 +114,35 @@ except GetoptError as err:
     exit(2)
     
 # initialise the parameters to be found in the arguments
-inputPath = ''
-outputPath = ''
+inputDir = ''
+outputDir = ''
 rewrite = False
 
 # search the parameters in the arguments given to the script
 for option, argument in options:
     if option in ('-i','--input'):
-        inputArg = argument
+        inputDir = argument
     elif option in ('-o','--output'):
-        outputArg = os.path.relpath(argument)
+        outputDir = os.path.relpath(argument)
     elif option in ("-r", "--rewrite"):
         rewrite = True
     elif option in ("-h", "--help"):
         help()
        
 # check whether all required parameters have been given as arguments and if not throw exception and abort
-if inputArg == '':
-    print("Argument required: input file or directory. Type '-i <path>' in the command line")
+if inputDir == '':
+    print("Argument required: input directory. Type '-i <path>' in the command line")
     exit(2)
-if outputArg == '':
-    print("Argument required: output file or directory. Type '-o <path>' in the command line")
+if outputDir == '':
+    print("Argument required: output directory. Type '-o <path>' in the command line")
     exit(2)
     
 # execute options chosen by the user
 if rewrite:
-    print ("*executing the script in rewrite mode*")
+    print ("executing the script in rewrite mode")
     
-if os.path.isfile(inputArg):
-    if inputArg.endswith('.json'):
-        inputDir, inputFileName = os.path.split(inputArg)
-        filesToProcess = [inputFileName]
-    else:
-        print("Wrong extension of the input file '" + inputArg + "'. Should be '.json'")
-elif os.path.isdir(inputArg):
+if os.path.exists(inputDir) and os.path.isdir(inputDir):
     # list all existing files in the input directory ending with ".json"
-    inputDir = inputArg
     print("search for files ending with '.json' in " + inputDir )
     filesToProcess = [f for f in os.listdir(inputDir) if os.path.isfile(os.path.join(inputDir, f)) and f.endswith('.json')]
     numberOfFilesFound = len(filesToProcess)
@@ -165,10 +151,14 @@ elif os.path.isdir(inputArg):
         exit(2)
     else:
         print (str(numberOfFilesFound) + " files found")
-
+else:
+    print(inputDir+" either does not exist or is not a directory")
+    exit(2)
+    
+        
 # check whether the output folder exist and create it if not
-if not os.path.exists(outputArg):
-    os.makedirs(outputArg)
+if not os.path.exists(outputDir):
+    os.makedirs(outputDir)
   
 stats = {"commits" : 0, "noAuthor" : 0, "noCommitter" : 0, "noFiles": 0, "empty": 0}  
 #build graphs for all variations for all JSON files
@@ -179,19 +169,22 @@ for fileToProcess in filesToProcess:
     try:
         with open(os.path.join(inputDir,fileToProcess)) as json_file:
             commits = json.load(json_file)
+
+        outputGraphFileName = os.path.join(outputDir, fileNameRoot+".graphml")
+        if rewrite or not os.path.exists(outputGraphFileName):
+            commitGraph, localStats = exportCommitGraph(commits)
+            print("Commit graph created for "+fileNameRoot)
+            print("\t with "+str(localStats))
+            stats["commits"] += localStats["commits"]
+            stats["noAuthor"] += localStats["noAuthor"]
+            stats["noCommitter"] += localStats["noCommitter"]
+            stats["noFiles"] += localStats["noFiles"]
+            stats["empty"] += localStats["empty"]
+            nx.write_graphml(commitGraph, outputGraphFileName)                
+        else:
+            print("Commit graph for "+fileNameRoot + "already exists")            
+            
     except json.decoder.JSONDecodeError as err:
         print("error while decoding json from file '" + fileToProcess + "'. Error returned: " + str(err))
-    
-    outputGraphFileName = os.path.join(outputArg, fileNameRoot+".graphml")
-    if rewrite or not os.path.exists(outputGraphFileName):
-        commitGraph, localStats = exportCommitGraph(commits)
-        print("Commit graph created for "+fileNameRoot)
-        print("\t with "+str(localStats))
-        stats["commits"] += localStats["commits"]
-        stats["noAuthor"] += localStats["noAuthor"]
-        stats["noCommitter"] += localStats["noCommitter"]
-        stats["noFiles"] += localStats["noFiles"]
-        stats["empty"] += localStats["empty"]
-        nx.write_graphml(commitGraph, outputGraphFileName)                
     
 print("graphs created with "+str(stats))
