@@ -3,6 +3,7 @@
 .token
 *.bat
 *.log
+*.log.1
 *.graphml
 *.svg
 *.pdf
