@@ -62,19 +62,16 @@ def getCommitterGraph(commits):
     for commit in commits:
         # GitHub Issue #13 Complex interaction cases in commits 
         currentCommitter = matchUser(fetchUserInfo(commit, "author"), users)
-        print ("    current commit :" + commit['url'])
         if "files" in commit.keys():
                 for file in commit['files']:
-                    print ("        looking for interactions in file" + file["filename"])
                     if not file['status']=='added':
                         lastEdits = []
                         for parent in commit['parents']:
-                            parentFullDetails = [ x for x in commits if x["sha"] == parent['sha']]
+                            parentFullDetails = [ x for x in commits if 'sha' in x.keys() and x['sha'] == parent['sha']]
                             if len(parentFullDetails)==1:
-                                lastEdits += searchLastEdit(commits, parentFullDetails[0], file["filename"])
+                                lastEdits += searchLastEdit(commits, parentFullDetails[0], file["filename"], [])
                             else:
-                                print ("error: no commit or more than one commit corresponding to sha: " + parent['sha'] + ": "+ str(parentFullDetails))
-                        #print("     edits found " + str(len(lastEdits)) + " " + str([x['sha'] for x in lastEdits]))
+                                print ("error: no commit or more than one commit corresponding to sha: " + parent['sha'])
                         # the list of returned commits should contain:
                         #     - at least one item, since you would expect that a file which is "modified" in the current commit has at least been "added" in a previous commit, if not "modified"
                         #     - max 2 different items, since a commit can have max 2 parents
@@ -82,7 +79,7 @@ def getCommitterGraph(commits):
                         lastEdits = [element for index, element in enumerate(lastEdits) if element not in lastEdits[index + 1:]] # removes the duplicates
                         #print("edits found " + str(len(lastEdits)) + " " + str([x['sha'] for x in lastEdits]))
                         if len(lastEdits)==0 or len(lastEdits)>2:
-                            print ("error - returned list of commits should contain 1 or 2 items: " + str(lastEdits))
+                            print ("error - returned list of commits should contain 1 or 2 items: ")
                             print ("    current commit : " + commit['url'])
                             print ("    current file :" + file["filename"])
                         for lastEdit in lastEdits:
@@ -196,13 +193,17 @@ def getUsers(commits):
 def fetchUserInfo(commit, role):
 
     user = {}
-    user['email'] = commit['commit'][role]['email'].lower()
-    user['name'] = commit['commit'][role]['name'].lower()
-    try:
-        user['login'] = commit[role]['login'].lower()
-    except TypeError as err:
-        user['login'] = ""
+    if 'commit' in commit.keys():
+        user['email'] = commit['commit'][role]['email'].lower()
+        user['name'] = commit['commit'][role]['name'].lower()
+        try:
+            user['login'] = commit[role]['login'].lower()
+        except TypeError as err:
+            user['login'] = ""
+    else:
+        print ("error: missing commit details")
     return user
+        
 
 ###################################################################################################################
 # FUNCTION
@@ -217,18 +218,19 @@ def matchUser(user, userList):
         user['email'] != "" and user['email'] in x['emails'] \
     ]
     if len(foundUser)!=1:
-        raise Exception("there is either no user or more than one user that fit with the following data: "+ str(user) + " returned users " +str(foundUser))
+        raise Exception("error: there is either no user or more than one user that fit with the following data: "+ str(user) + " returned users " +str(foundUser))
     return foundUser[0]
 
 ###################################################################################################################
 # FUNCTION
 ###################################################################################################################
 # searches the last commit in the history of the given commit where the file has been edited
-def searchLastEdit(commits, commit, fileName):
+def searchLastEdit(commits, commit, fileName, alreadyProcessedCommits):
 
     #print (commit['url'])
     lookedForCommit = []
     fileFound = False
+    alreadyProcessedCommits.append(commit['sha'])
         
     try:
         for file in commit['files']:
@@ -243,11 +245,12 @@ def searchLastEdit(commits, commit, fileName):
 
     else:
         for parent in commit['parents']:
-            parentFullDetails = [ x for x in commits if x["sha"] == parent['sha']]
-            if len(parentFullDetails)==1:
-                lookedForCommit+= searchLastEdit(commits, parentFullDetails[0], fileName)
-            else:
-                print ("error: no commit or more than one commit corresponding to sha: " + parent['sha'] + ": "+ str(parentFullDetails))
+            if not parent['sha'] in alreadyProcessedCommits:
+                parentFullDetails = [ x for x in commits if 'sha' in x.keys() and x['sha'] == parent['sha']]
+                if len(parentFullDetails)==1:
+                    lookedForCommit+= searchLastEdit(commits, parentFullDetails[0], fileName, alreadyProcessedCommits)
+                else:
+                    print ("error: no commit or more than one commit corresponding to sha: " + parent['sha'])
 
     return lookedForCommit
    
